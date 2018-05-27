@@ -17,7 +17,7 @@ let config = {
 };
 
 let game = new Phaser.Game(config);
-let platforms, player;
+let platforms, player, cursors;
 
 function preload() {
   this.load.image('sky', 'assets/sky.png');
@@ -60,16 +60,36 @@ function create() {
   });
 
   this.anims.create({
-    key: 'left',
+    key: 'right',
     frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
     frameRate: 10,
     repeat: -1
   });
 
   this.physics.add.collider(player, platforms);
-
+  cursors = this.input.keyboard.createCursorKeys();
 
 }
 
 function update() {
+  if (cursors.left.isDown) {
+    player.setVelocityX(-160);
+    player.anims.play('left', true);
+  }
+  else if (cursors.right.isDown) {
+    player.setVelocityX(160);
+    player.anims.play('right', true);
+  }
+  else {
+    player.setVelocityX(0);
+    player.anims.play('turn');
+  }
+
+  if (cursors.up.isDown && player.body.touching.down) {
+    player.setVelocityY(-230);
+  }
+
+  if (cursors.up.isDown && !player.body.touching.down) {
+    player.setVelocityY(-130);
+  }
 }
