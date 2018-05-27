@@ -19,7 +19,8 @@ let config = {
 var score = 0;
 
 let game = new Phaser.Game(config);
-let platforms, stars, player, cursors, scoreText;
+let platforms, stars, player, bombs,
+    cursors, scoreText;
 
 function preload() {
   this.load.image('sky', 'assets/sky.png');
@@ -48,17 +49,43 @@ function create() {
   platforms.create(50, 250, 'ground');
   platforms.create(750, 220, 'ground');
 
+  let hitBomb = (player, bombs) => {
+    this.physics.pause();
+    player.setTint(0xff0000);
+    player.anims.play('turn');
+    gameOver = true;
+  }
+
+  bombs = this.physics.add.group();
+  
+  // this.physics.add.collider(bombs, player);
+
   let collectStar = (player, star) => {
     star.disableBody(true, true);
 
     score += 10;
     scoreText.setText(`Score: ${score}`);
+    console.log(stars.countActive(true));
+    if (stars.countActive(true) === 0) {
+      stars.children.iterate((child) => {
+        child.enableBody(true, child.x, 0, true, true);
+      })
+
+      let x = (player.x < 400) ? Phaser.Math.Between(400, 800) :
+        Phaser.Math.Between(0, 400);
+
+      let bomb = bombs.create(x, 16, 'bomb');
+      bomb.setBounce(Phaser.Math.Between(.1, .9));
+      bomb.setCollideWorldBounds(true);
+      bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+      bomb.allowGravity = false;
+    }
   }
 
   stars = this.physics.add.group({
     key: 'star',
-    repeat: 11,
-    setXY: { x: 12, y: 0, stepX: 70 }
+    repeat: 5,
+    setXY: { x: 12, y: 0, stepX: 110 }
   });
 
   stars.children.iterate( (child) => 
@@ -92,7 +119,8 @@ function create() {
   this.physics.add.collider(player, platforms);
   this.physics.add.collider(stars, platforms);
   this.physics.add.overlap(player, stars, collectStar, null, this);
-
+  this.physics.add.overlap(player, bombs, hitBomb, null, this);
+  this.physics.add.collider(bombs, platforms);
   cursors = this.input.keyboard.createCursorKeys();
 
 }
