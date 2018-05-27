@@ -16,8 +16,10 @@ let config = {
   }
 };
 
+var score = 0;
+
 let game = new Phaser.Game(config);
-let platforms, stars, player, cursors;
+let platforms, stars, player, cursors, scoreText;
 
 function preload() {
   this.load.image('sky', 'assets/sky.png');
@@ -33,6 +35,11 @@ function preload() {
 function create() {
   this.add.image(0, 0, 'sky').setOrigin(0, 0);
 
+  scoreText = this.add.text(16, 16, 'Score: 0', {
+    fontSize: '32px',
+    fill: '#000'
+  });
+
   platforms = this.physics.add.staticGroup();
 
   platforms.create(400, 568, 'ground').setScale(2).refreshBody();
@@ -41,8 +48,11 @@ function create() {
   platforms.create(50, 250, 'ground');
   platforms.create(750, 220, 'ground');
 
-  collectStar = (player, star) => {
+  let collectStar = (player, star) => {
     star.disableBody(true, true);
+
+    score += 10;
+    scoreText.setText(`Score: ${score}`);
   }
 
   stars = this.physics.add.group({
