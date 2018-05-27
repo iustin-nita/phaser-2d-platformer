@@ -17,7 +17,7 @@ let config = {
 };
 
 let game = new Phaser.Game(config);
-let platforms, player, cursors;
+let platforms, stars, player, cursors;
 
 function preload() {
   this.load.image('sky', 'assets/sky.png');
@@ -40,7 +40,20 @@ function create() {
   platforms.create(600, 400, 'ground');
   platforms.create(50, 250, 'ground');
   platforms.create(750, 220, 'ground');
-  // this.add.image(400, 300, 'star');
+
+  collectStar = (player, star) => {
+    star.disableBody(true, true);
+  }
+
+  stars = this.physics.add.group({
+    key: 'star',
+    repeat: 11,
+    setXY: { x: 12, y: 0, stepX: 70 }
+  });
+
+  stars.children.iterate( (child) => 
+    child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8))
+  );
 
   player = this.physics.add.sprite(100, 450, 'dude');
   player.setBounce(0.2);
@@ -67,6 +80,9 @@ function create() {
   });
 
   this.physics.add.collider(player, platforms);
+  this.physics.add.collider(stars, platforms);
+  this.physics.add.overlap(player, stars, collectStar, null, this);
+
   cursors = this.input.keyboard.createCursorKeys();
 
 }
